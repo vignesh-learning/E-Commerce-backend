@@ -7,16 +7,20 @@ const jwt = require("jsonwebtoken");
 
 const app = express();
 
-// middleware
-app.use(cors({
-  origin: ["https://e-commerce-oolj.vercel.app/Signup"],
-  methods: ["GET", "POST"],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173", 
+      "https://e-commerce-ny6g.vercel.app"
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
+  })
+);
 
 app.use(express.json());
 
-// test route
+
 app.get("/", (req, res) => {
   res.send("Backend is running 🚀");
 });
@@ -24,24 +28,41 @@ app.get("/", (req, res) => {
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.log("❌ MongoDB Error:", err));
+  .catch((err) => {
+    console.log("❌ MongoDB Error:", err);
+    process.exit(1);
+  });
 
 const userSchema = new mongoose.Schema({
-  name: String,
-  email: { type: String, unique: true },
-  password: String,
+  name: {
+    type: String,
+    required: true
+  },
+  email: {
+    type: String,
+    unique: true,
+    required: true
+  },
+  password: {
+    type: String,
+    required: true
+  }
 });
 
 const User = mongoose.model("User", userSchema);
 
-// signup
 app.post("/signup", async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: "All fields required" });
+    }
+
     const existingUser = await User.findOne({ email });
+
     if (existingUser) {
-      return res.json({ message: "User already exists" });
+      return res.status(400).json({ message: "User already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -49,43 +70,54 @@ app.post("/signup", async (req, res) => {
     const newUser = new User({
       name,
       email,
-      password: hashedPassword,
+      password: hashedPassword
     });
 
     await newUser.save();
 
-    res.json({ success: true, message: "Signup successful" });
+    res.status(201).json({
+      success: true,
+      message: "Signup successful"
+    });
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: err.message });
+    console.log("Signup Error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
-// login
 app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    if (!email || !password) {
+      return res.status(400).json({ message: "All fields required" });
+    }
+
     const user = await User.findOne({ email });
+
     if (!user) {
-      return res.json({ message: "Invalid email or password" });
+      return res.status(400).json({ message: "Invalid email or password" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
+
     if (!isMatch) {
-      return res.json({ message: "Invalid email or password" });
+      return res.status(400).json({ message: "Invalid email or password" });
     }
 
     const token = jwt.sign(
       { id: user._id },
-      process.env.JWT_SECRET || "secretkey",
+      process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
 
-    res.json({ token });
+    res.json({
+      success: true,
+      token
+    });
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: err.message });
+    console.log("Login Error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
