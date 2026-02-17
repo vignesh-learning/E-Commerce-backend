@@ -7,10 +7,11 @@ const jwt = require("jsonwebtoken");
 
 const app = express();
 
+// middleware
 app.use(cors({
   origin: [
-    "https://e-commerce-oolj.vercel.app",
-    "http://localhost:5173"
+    "http://localhost:5173",
+    "https://e-commerce-oolj.vercel.app"
   ],
   methods: ["GET", "POST"],
   credentials: true
@@ -22,10 +23,16 @@ app.get("/", (req, res) => {
   res.send("Backend is running 🚀");
 });
 
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch(err => console.log("❌ MongoDB Error:", err));
 
+// ✅ MongoDB Connection (IMPORTANT)
+mongoose.set("strictQuery", false);
+
+mongoose.connect(process.env.MONGO_URI)
+.then(() => console.log("✅ MongoDB Connected Successfully"))
+.catch(err => console.log("❌ MongoDB Error:", err));
+
+
+// user schema
 const userSchema = new mongoose.Schema({
   name: String,
   email: { type: String, unique: true },
@@ -34,6 +41,8 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model("User", userSchema);
 
+
+// signup
 app.post("/Signup", async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -43,6 +52,7 @@ app.post("/Signup", async (req, res) => {
     }
 
     const existingUser = await User.findOne({ email });
+
     if (existingUser)
       return res.status(400).json({ message: "User already exists" });
 
@@ -57,15 +67,19 @@ app.post("/Signup", async (req, res) => {
   }
 });
 
+
+// login
 app.post("/Login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
+
     if (!user)
       return res.status(400).json({ message: "Invalid email or password" });
 
     const isMatch = await bcrypt.compare(password, user.password);
+
     if (!isMatch)
       return res.status(400).json({ message: "Invalid email or password" });
 
@@ -82,6 +96,8 @@ app.post("/Login", async (req, res) => {
   }
 });
 
+
+// start server
 app.listen(process.env.PORT || 5000, () => {
   console.log("🚀 Server running");
 });
