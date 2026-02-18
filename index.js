@@ -1,6 +1,5 @@
 require("dotenv").config();
 const express = require("express");
-const mongoose = require("mongoose");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -20,12 +19,12 @@ app.use(express.json());
 
 mongoose.set("strictQuery", false);
 
+const mongoose = require("mongoose");
+
 mongoose.connect(process.env.MONGO_URI)
-.then(() => console.log("✅ MongoDB Connected Successfully"))
-.catch(err => {
-  console.log("❌ MongoDB Connection Error:", err);
-  process.exit(1);
-});
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch(err => console.log("❌ MongoDB Connection Error:", err));
+
 
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
