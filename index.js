@@ -8,12 +8,7 @@ const jwt = require("jsonwebtoken");
 const app = express();
 
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://e-commerce-oolj.vercel.app",
-    "https://e-commerce-udmt-git-main-vignesh-ms-projects-af8df775.vercel.app"
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  origin: true,
   credentials: true
 }));
 
