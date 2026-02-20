@@ -12,7 +12,8 @@ app.use(cors({
     "http://localhost:5173",
     "https://e-commerce-oolj.vercel.app"
   ],
-  methods: ["GET", "POST", "PUT", "DELET"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
 }));
 
