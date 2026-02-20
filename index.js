@@ -12,7 +12,7 @@ app.use(cors({
     "http://localhost:5173",
     "https://e-commerce-oolj.vercel.app"
   ],
-  methods: ["GET", "POST"],
+  methods: ["GET", "POST", "PUT", "DELET"],
   credentials: true
 }));
 
